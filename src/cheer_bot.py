@@ -4,9 +4,7 @@ from telegram.ext import CommandHandler
 
 TOKEN = open("../token.txt", "r").read()
 
-realStrikes = {}
-
-dummyStrikes = {}
+userStrikes = {}
 
 updater = Updater(token=TOKEN)
 dispatcher = updater.dispatcher
@@ -26,21 +24,25 @@ dispatcher.add_handler(start_handler)
 def addRealStrike(bot, update, args):
     username_formatted = args[0]
     username_lower = str(args[0]).lower()
+
     if username_lower == "@danmagor":
         bot.send_message(chat_id=update.message.chat_id,
                          text="LoL, Nope :)")
         return
+    strike_key = "realStrikes"
 
-    if username_lower not in realStrikes:
-        realStrikes[username_lower] = 1
+    if username_lower not in userStrikes:
+        userStrikes[username_lower] = {strike_key: 0, "dummyStrike": 0}
+        userStrikes[username_lower][strike_key] = 1
     else:
-        realStrikes[username_lower] = realStrikes[username_lower] + 1
+        userStrikes[username_lower][strike_key] = userStrikes[username_lower][strike_key] + 1
 
-    if realStrikes[username_lower] + dummyStrikes[username_lower] < 3:
+    if userStrikes[username_lower][strike_key] + userStrikes[username_lower]["dummyStrike"] < 3:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Cheerleader {} now has {} strike(s)!".format(username_formatted,
-                                                                            realStrikes[username_lower] + dummyStrikes[
-                                                                                username_lower]))
+                                                                            userStrikes[username_lower][strike_key] +
+                                                                            userStrikes[
+                                                                                username_lower]["dummyStrike"]))
     else:
         bot.send_message(chat_id=update.message.chat_id, text="Too much strikes :C {} ".format(username_lower))
 
@@ -48,19 +50,25 @@ def addRealStrike(bot, update, args):
 def addDummyStrike(bot, update, args):
     username_formatted = args[0]
     username_lower = str(args[0]).lower()
+
     if username_lower == "@danmagor":
         bot.send_message(chat_id=update.message.chat_id,
                          text="LoL, Nope :)")
         return
-    if username_lower not in dummyStrikes:
-        dummyStrikes[username_lower] = 1
+    strike_key = "dummyStrikes"
+
+    if username_lower not in userStrikes:
+        userStrikes[username_lower] = {strike_key: 0, "realStrikes": 0}
+        userStrikes[username_lower][strike_key] = 1
     else:
-        dummyStrikes[username_lower] = dummyStrikes[username_lower] + 1
-    if dummyStrikes[username_lower] < 3:
+        userStrikes[username_lower][strike_key] = userStrikes[username_lower][strike_key] + 1
+
+    if userStrikes[username_lower][strike_key] + userStrikes[username_lower][strike_key] < 3:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Cheerleader {} now has {} strike(s)!".format(username_formatted,
-                                                                            dummyStrikes[username_lower] + dummyStrikes[
-                                                                                username_lower]))
+                                                                            userStrikes[username_lower][strike_key] +
+                                                                            userStrikes[
+                                                                                username_lower]["realStrikes"]))
     else:
         bot.send_message(chat_id=update.message.chat_id, text="Too much strikes :C {} ".format(username_lower))
 
@@ -69,9 +77,9 @@ def addStrike(bot, update, args):
     if len(args) == 0:
         return
 
-    userSender = str(update.message.from_user).lower()
+    userSender = str(update.message.from_user.username).lower()
 
-    if userSender == "@dammagor":
+    if userSender == "danmagor":
         addRealStrike(bot, update, args)
     else:
         addDummyStrike(bot, update, args)
