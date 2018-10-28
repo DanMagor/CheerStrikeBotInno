@@ -2,7 +2,7 @@ from telegram.ext import Updater
 import logging
 from telegram.ext import CommandHandler
 
-TOKEN = "PUT_YOU_TOKEN_HERE" #TODO: PUT_YOU_TOKEN_HERE
+TOKEN = open("../token.txt", "r").read()
 
 users = {}
 
@@ -10,7 +10,8 @@ updater = Updater(token=TOKEN)
 dispatcher = updater.dispatcher
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.INFO)
+                    level=logging.INFO)
+
 
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!")
@@ -19,7 +20,9 @@ def start(bot, update):
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
+
 def addStrike(bot, update, args):
+    postUser = update.message.from_user
     if len(args) == 0:
         return
     username_formatted = args[0]
@@ -33,18 +36,16 @@ def addStrike(bot, update, args):
         print(users)
     else:
         users[username] = users[username] + 1
-    if users[username]<3:
-        bot.send_message(chat_id=update.message.chat_id, text="Cheerleader {} now has {} strike(s)!".format(username_formatted, users[username]))
+    if users[username] < 3:
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Cheerleader {} now has {} strike(s)!".format(username_formatted, users[username]))
     else:
         bot.send_message(chat_id=update.message.chat_id, text="Too much strikes :C {} ".format(username))
+
+
 strike_handler = CommandHandler('addStrike', addStrike, pass_args=True)
+
 dispatcher.add_handler(strike_handler)
 
-#Start Bot
+# Start Bot
 updater.start_polling()
-
-
-
-
-
-
